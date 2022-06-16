@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { prismaClient } from "../../../prisma";
 
 export default NextAuth({
   providers: [
@@ -14,7 +15,17 @@ export default NextAuth({
         username: { label: "Username", type: "text", placeholder: "jsmith" },
         password: { label: "Password", type: "password" },
       },
-      authorize(credentials, req) {
+      async authorize(credentials, req) {
+        await prismaClient.user.upsert({
+          where: {
+            username: credentials!.username,
+          },
+          create: {
+            username: credentials!.username,
+          },
+          update: {},
+        });
+
         const result = {
           id: credentials!.username,
         };
